@@ -2,72 +2,65 @@ from typing import Dict, Any
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.responses import StreamingResponse
 import io
-
-# استيراد الموديلات والفانكشنات
-from models import BaseModel, Covid19Model, BrainTumorModel, KidneyStoneModel, SkinCancerModel, \
-    TuberculosisModel, BoneFractureModel, AlzheimerModel, EyeDiseasesModel, DentalModel
+from models import BaseModel, Covid19Model, BrainTumorModel,KidneyStoneModel, SkinCancerModel, \
+TuberculosisModel, BoneFractureModel, AlzheimerModel, EyeDiseasesModel, DentalModel
 from prescription import predict
 from chatbot import MedicalChatbot
+import os
 
 app = FastAPI()
 
-# ✅ تحميل جميع الموديلات مرة واحدة عند بداية التشغيل
-covid19_model = Covid19Model()
-brain_tumor_model = BrainTumorModel()
-skin_cancer_model = SkinCancerModel()
-kidney_stone_model = KidneyStoneModel()
-tuberculosis_model = TuberculosisModel()
-bone_fracture_model = BoneFractureModel()
-alzheimer_model = AlzheimerModel()
-eye_diseases_model = EyeDiseasesModel()
-
-# ✅ هيلبر موحد للتعامل مع الموديلات
 async def predict_helper(file: UploadFile, model: BaseModel) -> Dict[str, Any]:
     """Helper function to handle predictions for all models."""
     try:
         contents = await file.read()
         img = io.BytesIO(contents)
+
         res = model.predict(img)
+
         return {**res}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# ✅ Endpoints مرتبة
 @app.post("/predict/covid19/")
 async def predict_covid19(file: UploadFile = File(...)) -> Dict[str, Any]:
-    return await predict_helper(file, covid19_model)
+    """Endpoint specifically for COVID-19 predictions."""
+    return await predict_helper(file, Covid19Model())
 
 @app.post("/predict/brain-tumor/")
 async def predict_brain_tumor(file: UploadFile = File(...)) -> Dict[str, Any]:
-    return await predict_helper(file, brain_tumor_model)
+    """Endpoint specifically for Brain Tumor predictions."""
+    return await predict_helper(file, BrainTumorModel())
 
 @app.post("/predict/skin-cancer/")
 async def predict_skin_cancer(file: UploadFile = File(...)) -> Dict[str, Any]:
-    return await predict_helper(file, skin_cancer_model)
+    """Endpoint specifically for Skin Cancer predictions."""
+    return await predict_helper(file, SkinCancerModel())
 
 @app.post("/predict/kidney-stone/")
 async def predict_kidney_stone(file: UploadFile = File(...)) -> Dict[str, Any]:
-    return await predict_helper(file, kidney_stone_model)
+    """Endpoint specifically for Kidney Stone predictions."""
+    return await predict_helper(file, KidneyStoneModel())
 
 @app.post("/predict/tuberculosis/")
 async def predict_tuberculosis(file: UploadFile = File(...)) -> Dict[str, Any]:
-    return await predict_helper(file, tuberculosis_model)
+    """Endpoint specifically for Tuberculosis predictions."""
+    return await predict_helper(file, TuberculosisModel())
 
 @app.post("/predict/bone-fracture/")
 async def predict_bone_fracture(file: UploadFile = File(...)) -> Dict[str, Any]:
-    return await predict_helper(file, bone_fracture_model)
+    """Endpoint specifically for Bone Fracture predictions."""
+    return await predict_helper(file, BoneFractureModel())
 
 @app.post("/predict/alzheimer/")
 async def predict_alzheimer(file: UploadFile = File(...)) -> Dict[str, Any]:
-    return await predict_helper(file, alzheimer_model)
+    """Endpoint specifically for Alzheimer predictions."""
+    return await predict_helper(file, AlzheimerModel())
 
 @app.post("/predict/eye-diseases/")
 async def predict_eye_diseases(file: UploadFile = File(...)) -> Dict[str, Any]:
-    return await predict_helper(file, eye_diseases_model)
-
-@app.post("/predict/dental/")
-async def predict_dental(file: UploadFile = File(...)) -> Dict[str, Any]:
-    return await predict_helper(file, dental_model)
+    """Endpoint specifically for Eye Diseases predictions."""
+    return await predict_helper(file, EyeDiseasesModel())
 
 @app.post("/predict/prescription/")
 async def predict_prescription(file: UploadFile = File(...)) -> Dict[str, Any]:
@@ -75,7 +68,22 @@ async def predict_prescription(file: UploadFile = File(...)) -> Dict[str, Any]:
     try:
         contents = await file.read()
         img = io.BytesIO(contents)
-        res = predict(img)  # انت هنا تستخدم فانكشن مش موديل
+
+        res = predict(img)
+
+        return {**res}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/predict/dental/")
+async def predict_dental(file: UploadFile = File(...)) -> Dict[str, Any]:
+    """Endpoint specifically for Dental predictions."""
+    try:
+        contents = await file.read()
+        img = io.BytesIO(contents)
+
+        res = DentalModel(img)
+
         return {**res}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -86,8 +94,41 @@ async def chat(prompt: str):
     chatbot = MedicalChatbot()
     return StreamingResponse(chatbot.get_chat_response(prompt), media_type="text/plain")
 
-# ✅ Root endpoint
+@app.get('/test-models')
+async def test_models():
+    """Test endpoint to check model paths and files."""
+    try:
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        models_dir = os.path.join(base_dir, "models")
+        
+        result = {
+            "cwd": os.getcwd(),
+            "base_dir": base_dir,
+            "models_dir": models_dir,
+            "models_dir_exists": os.path.exists(models_dir),
+        }
+        
+        if os.path.exists(models_dir):
+            result["models_files"] = os.listdir(models_dir)
+            
+        covid_model_path = os.path.join(models_dir, "covid-19.onnx")
+        result["covid_model_path"] = covid_model_path
+        result["covid_model_exists"] = os.path.exists(covid_model_path)
+        
+        return result
+    except Exception as e:
+        return {"error": str(e)}
+
+# Root endpoint
 @app.get('/')
 def read_root():
     """Root endpoint to check if the API is running."""
     return {"message": "API is running ✅"}
+
+# Run the app
+# if __name__ == "__main__":
+#     import uvicorn
+#     import os
+
+#     port = int(os.environ.get("PORT", 8000))
+#     uvicorn.run(app, host="0.0.0.0", port=port)  # 127.0.0.1  8000
