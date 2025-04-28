@@ -52,7 +52,7 @@ def predict_from_single_image(model_path, image_path, device=None):
         return e
 
 def predict(img_file):
-    MODEL_PATH = r"models\prescription_model_weights"
+    MODEL_PATH = r"/models/models/prescription_model_weights"
 
     res = predict_from_single_image(MODEL_PATH, img_file)
 
