@@ -20,7 +20,6 @@ tuberculosis_model = TuberculosisModel()
 bone_fracture_model = BoneFractureModel()
 alzheimer_model = AlzheimerModel()
 eye_diseases_model = EyeDiseasesModel()
-dental_model = DentalModel()
 
 # ✅ هيلبر موحد للتعامل مع الموديلات
 async def predict_helper(file: UploadFile, model: BaseModel) -> Dict[str, Any]:
