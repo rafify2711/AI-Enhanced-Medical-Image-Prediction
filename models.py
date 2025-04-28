@@ -8,7 +8,7 @@ import io
 import base64
 import os
 
-MODELS_DIR = r"models"
+MODELS_DIR = r"/models/models"
 MODELS_PATHS: Dict[str, str] = {
     "Covid19Model": os.path.join(MODELS_DIR, "covid-19.onnx"),
     "BrainTumorModel": os.path.join(MODELS_DIR, "brain-tumor.onnx"),

@@ -1,7 +1,6 @@
 # Use a specific Python version image
 FROM python:3.12.0
 
-# Install system dependencies (OpenCV needs libGL)
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     libgl1-mesa-glx \
@@ -25,13 +24,11 @@ COPY requirements.txt .
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy only the necessary application files (assuming your app is in the current directory)
+# Copy application files
 COPY . .
 
 # Explicitly ensure models directory exists and has the right permissions
-RUN mkdir -p /app/models/models
-COPY models/ /app/models/models
-RUN chmod -R 755 /app/models/models
+RUN mkdir -p /app/models/models && chmod -R 755 /app/moels/models
 
 # Expose the port your app will run on
 EXPOSE 8000
