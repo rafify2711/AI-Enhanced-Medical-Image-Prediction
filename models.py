@@ -205,6 +205,14 @@ class KidneyStoneModel(BaseModel):
             # Remove detections with IoU > threshold
             detections = [det for i, det in enumerate(detections) if ious[i] < iou_threshold]
 
+
+              # حاول تحميل الخط، ولو مش موجود استخدم الافتراضي
+        try:
+            font = ImageFont.truetype("arial.ttf", size=15)
+        except OSError:
+            font = ImageFont.load_default()
+
+
         for detection in keep:
             # Convert YOLO format (center_x, center_y, width, height) to (x_min, y_min, x_max, y_max)
             x_min, y_min, x_max, y_max = self._yolo_to_xyxy(box=detection[:-2])
@@ -213,7 +221,7 @@ class KidneyStoneModel(BaseModel):
 
             draw.rectangle([x_min, y_min, x_max, y_max], outline='red', width=3)
             label = f"{class_names.get(int(class_id), 'Unknown')} {int((confidence * 100_00)) / 100}%"
-            draw.text((x_min, y_min - 15), label, fill='red', font=ImageFont.truetype(font="arial.ttf", size=15, ))
+            draw.text((x_min, y_min - 15), label, fill='red', font=font)
 
         # Encode the image as a base64 string
         buffered = io.BytesIO()
