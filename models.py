@@ -208,7 +208,7 @@ class KidneyStoneModel(BaseModel):
 
               # حاول تحميل الخط، ولو مش موجود استخدم الافتراضي
         try:
-            font = ImageFont.truetype("arial.ttf", size=15)
+            font = ImageFont.truetype("arial.ttf", size=18)
         except OSError:
             font = ImageFont.load_default()
 
